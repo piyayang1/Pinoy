@@ -1,137 +1,121 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pagtugtog - Filipino Music Puzzle</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-            background-color: #fafafa;
-        }
-        h1 {
-            margin-top: 20px;
-        }
-        .game-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 40px;
-            flex-wrap: wrap;
-        }
-        .instrument-piece {
-            width: 100px;
-            height: 100px;
-            margin: 20px;
-            background-color: #f39c12;
-            border-radius: 8px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
-        }
-        .instruments-area {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        .instrument-slot {
-            width: 100px;
-            height: 100px;
-            margin: 20px;
-            background-color: #2ecc71;
-            border-radius: 8px;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .score {
-            font-size: 20px;
-            margin-top: 20px;
-        }
-    </style>
-</head>
-<body>
+// Get canvas and context
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
-    <h1>Pagtugtog - Filipino Music Puzzle</h1>
-    <p>Drag the instrument pieces to the correct slots to complete the Filipino song!</p>
+// Game constants
+const courtWidth = 800;
+const courtHeight = 600;
+const hoopRadius = 30;
+const ballRadius = 10;
+const hoopX = courtWidth - 100;
+const hoopY = courtHeight / 2;
+let score = 0;
 
-    <div class="game-container">
-        <div id="instrument1" class="instrument-piece" draggable="true" ondragstart="drag(event)">
-            <img src="https://via.placeholder.com/80x80?text=Guitar" alt="Guitar">
-        </div>
-        <div id="instrument2" class="instrument-piece" draggable="true" ondragstart="drag(event)">
-            <img src="https://via.placeholder.com/80x80?text=Bandurria" alt="Bandurria">
-        </div>
-        <div id="instrument3" class="instrument-piece" draggable="true" ondragstart="drag(event)">
-            <img src="https://via.placeholder.com/80x80?text=Kulintang" alt="Kulintang">
-        </div>
-    </div>
+// Ball properties
+let ballX = 100;
+let ballY = courtHeight - 50;
+let ballSpeedX = 0;
+let ballSpeedY = 0;
+let gravity = 0.1;
+let isShooting = false;
 
-    <div class="instruments-area">
-        <div id="slot1" class="instrument-slot" ondrop="drop(event)" ondragover="allowDrop(event)">
-            <p>Guitar</p>
-        </div>
-        <div id="slot2" class="instrument-slot" ondrop="drop(event)" ondragover="allowDrop(event)">
-            <p>Bandurria</p>
-        </div>
-        <div id="slot3" class="instrument-slot" ondrop="drop(event)" ondragover="allowDrop(event)">
-            <p>Kulintang</p>
-        </div>
-    </div>
+// Player controls
+let playerSpeed = 5;
 
-    <div class="score" id="score">Score: 0</div>
+// Game loop
+function gameLoop() {
+    // Clear canvas
+    ctx.clearRect(0, 0, courtWidth, courtHeight);
 
-    <audio id="music" src="https://www.soundjay.com/button/beep-07.wav" preload="auto"></audio>
-    
-    <script>
-        let score = 0;
-        const musicElement = document.getElementById('music');
-        const scoreElement = document.getElementById('score');
+    // Draw court
+    drawCourt();
 
-        // Allow dragging over
-        function allowDrop(event) {
-            event.preventDefault();
+    // Draw ball
+    drawBall();
+
+    // Update ball position
+    updateBall();
+
+    // Detect ball hoop collision
+    detectCollision();
+
+    // Display score
+    displayScore();
+
+    // Request next frame
+    requestAnimationFrame(gameLoop);
+}
+
+// Draw the basketball court
+function drawCourt() {
+    ctx.fillStyle = "#228B22"; // Court color
+    ctx.fillRect(0, 0, courtWidth, courtHeight); // Court background
+
+    // Draw hoop
+    ctx.fillStyle = "red";
+    ctx.beginPath();
+    ctx.arc(hoopX, hoopY, hoopRadius, 0, Math.PI * 2, false);
+    ctx.fill();
+}
+
+// Draw ball
+function drawBall() {
+    ctx.fillStyle = "orange";
+    ctx.beginPath();
+    ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2, false);
+    ctx.fill();
+}
+
+// Update ball position and velocity
+function updateBall() {
+    if (isShooting) {
+        ballX += ballSpeedX;
+        ballY += ballSpeedY;
+        ballSpeedY += gravity;
+
+        if (ballY + ballRadius >= courtHeight) {
+            ballSpeedY = -ballSpeedY * 0.7; // Bounce off the ground
+            ballY = courtHeight - ballRadius;
         }
+    }
+}
 
-        // Handle dragging item
-        function drag(event) {
-            event.dataTransfer.setData("text", event.target.id);
+// Detect collision with hoop
+function detectCollision() {
+    const distance = Math.sqrt(Math.pow(ballX - hoopX, 2) + Math.pow(ballY - hoopY, 2));
+    if (distance <= hoopRadius + ballRadius) {
+        score++;
+        resetBall();
+    }
+}
+
+// Display score
+function displayScore() {
+    ctx.fillStyle = "black";
+    ctx.font = "30px Arial";
+    ctx.fillText("Score: " + score, 20, 40);
+}
+
+// Reset the ball position after scoring
+function resetBall() {
+    ballX = 100;
+    ballY = courtHeight - 50;
+    ballSpeedX = 0;
+    ballSpeedY = 0;
+    isShooting = false;
+}
+
+// Handle keyboard input (moving the player and shooting)
+document.addEventListener("keydown", function (event) {
+    if (event.key === "ArrowUp") {
+        // Shoot the ball
+        if (!isShooting) {
+            isShooting = true;
+            ballSpeedX = 10;
+            ballSpeedY = -15;
         }
+    }
+});
 
-        // Handle drop action
-        function drop(event) {
-            event.preventDefault();
-            const data = event.dataTransfer.getData("text");
-            const draggedElement = document.getElementById(data);
-            const targetSlot = event.target;
-
-            // Check if the dragged element matches the slot (by ID)
-            if (
-                (targetSlot.id === "slot1" && draggedElement.id === "instrument1") ||
-                (targetSlot.id === "slot2" && draggedElement.id === "instrument2") ||
-                (targetSlot.id === "slot3" && draggedElement.id === "instrument3")
-            ) {
-                targetSlot.appendChild(draggedElement);
-                draggedElement.style.margin = "0";
-                score++;
-                scoreElement.textContent = `Score: ${score}`;
-
-                // Check if all pieces are in place
-                if (score === 3) {
-                    musicElement.play(); // Play the sound (you can change it to a traditional Filipino song)
-                    setTimeout(() => {
-                        alert('Congratulations! You completed the Filipino music puzzle!');
-                    }, 500);
-                }
-            } else {
-                alert("Wrong placement! Try again.");
-            }
-        }
-    </script>
-</body>
-</html>
+// Start the game loop
+gameLoop();
