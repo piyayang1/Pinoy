@@ -1,1 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tumbang Preso Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        .game-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        .can {
+            width: 100px;
+            height: 200px;
+            background-color: #f39c12;
+            border-radius: 10px;
+            margin-right: 20px;
+        }
+        .player {
+            width: 50px;
+            height: 50px;
+            background-color: #2ecc71;
+            border-radius: 50%;
+            position: absolute;
+            top: 80%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Tumbang Preso Game</h1>
+    <p>Try to knock down the can using your slipper (Click "Throw Slipper")!</p>
+
+    <div class="game-container">
+        <div class="can" id="can"></div>
+        <div class="player" id="player"></div>
+    </div>
+
+    <button id="throwButton">Throw Slipper</button>
+
+    <script>
+        let can = document.getElementById('can');
+        let player = document.getElementById('player');
+        let throwButton = document.getElementById('throwButton');
+        let canPosition = { top: 50, left: 150 }; // initial position of the can
+
+        // Function to simulate the slipper throw
+        function throwSlipper() {
+            let throwDistance = Math.random() * 200 + 50; // Random throw distance between 50px to 250px
+            let playerPosition = player.getBoundingClientRect();
+
+            // Check if the slipper hits the can
+            if (throwDistance > canPosition.left - throwDistance && throwDistance < canPosition.left + 100) {
+                can.style.backgroundColor = '#e74c3c'; // Change can color to red (knocked down)
+                setTimeout(() => {
+                    alert('You knocked down the can! You win!');
+                    resetGame(); // Reset the game after winning
+                }, 500);
+            } else {
+                alert('Missed! Try again!');
+            }
+        }
+
+        // Function to reset the game
+        function resetGame() {
+            can.style.backgroundColor = '#f39c12'; // Reset can color to original
+            canPosition.left = 150; // Reset can position
+        }
+
+        // Event listener for throwing the slipper
+        throwButton.addEventListener('click', throwSlipper);
+    </script>
+</body>
+</html>
 
