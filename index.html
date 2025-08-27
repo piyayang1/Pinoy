@@ -3,105 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sipa Game</title>
+    <title>Pagtugtog - Filipino Music Puzzle</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Arial', sans-serif;
             text-align: center;
             margin: 0;
             padding: 0;
-            background-color: #f0f0f0;
+            background-color: #fafafa;
+        }
+        h1 {
+            margin-top: 20px;
         }
         .game-container {
-            position: relative;
-            height: 400px;
-            width: 600px;
-            margin: 50px auto;
-            background-color: #e7e7e7;
-            border: 2px solid #333;
-            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            margin-top: 40px;
+            flex-wrap: wrap;
         }
-        .ball {
-            width: 40px;
-            height: 40px;
+        .instrument-piece {
+            width: 100px;
+            height: 100px;
+            margin: 20px;
             background-color: #f39c12;
-            border-radius: 50%;
-            position: absolute;
-            bottom: 50px;
-            left: 50%;
-            transform: translateX(-50%);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+        }
+        .instruments-area {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .instrument-slot {
+            width: 100px;
+            height: 100px;
+            margin: 20px;
+            background-color: #2ecc71;
+            border-radius: 8px;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .score {
-            font-size: 24px;
+            font-size: 20px;
             margin-top: 20px;
         }
     </style>
 </head>
 <body>
 
-    <h1>Sipa Game</h1>
-    <p>Press the spacebar to kick the ball and keep it in the air!</p>
+    <h1>Pagtugtog - Filipino Music Puzzle</h1>
+    <p>Drag the instrument pieces to the correct slots to complete the Filipino song!</p>
 
     <div class="game-container">
-        <div class="ball" id="ball"></div>
+        <div id="instrument1" class="instrument-piece" draggable="true" ondragstart="drag(event)">
+            <img src="https://via.placeholder.com/80x80?text=Guitar" alt="Guitar">
+        </div>
+        <div id="instrument2" class="instrument-piece" draggable="true" ondragstart="drag(event)">
+            <img src="https://via.placeholder.com/80x80?text=Bandurria" alt="Bandurria">
+        </div>
+        <div id="instrument3" class="instrument-piece" draggable="true" ondragstart="drag(event)">
+            <img src="https://via.placeholder.com/80x80?text=Kulintang" alt="Kulintang">
+        </div>
+    </div>
+
+    <div class="instruments-area">
+        <div id="slot1" class="instrument-slot" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <p>Guitar</p>
+        </div>
+        <div id="slot2" class="instrument-slot" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <p>Bandurria</p>
+        </div>
+        <div id="slot3" class="instrument-slot" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <p>Kulintang</p>
+        </div>
     </div>
 
     <div class="score" id="score">Score: 0</div>
 
+    <audio id="music" src="https://www.soundjay.com/button/beep-07.wav" preload="auto"></audio>
+    
     <script>
-        let ball = document.getElementById('ball');
-        let scoreElement = document.getElementById('score');
         let score = 0;
-        let velocityY = 0;
-        let gravity = 0.5; // Gravity pulls the ball down
-        let jumpStrength = -10; // Initial strength for the jump (kick)
-        let isJumping = false;
+        const musicElement = document.getElementById('music');
+        const scoreElement = document.getElementById('score');
 
-        // Function to animate the ball's movement
-        function updateBallPosition() {
-            let ballPosition = ball.getBoundingClientRect();
-            let container = document.querySelector('.game-container');
-            let containerHeight = container.clientHeight;
-
-            // Apply gravity to simulate falling
-            if (ballPosition.top < containerHeight - ball.offsetHeight) {
-                velocityY += gravity; // Increase downward velocity
-                ball.style.top = ballPosition.top + velocityY + 'px';
-            } else {
-                // Ball hits the ground (reset)
-                ball.style.top = containerHeight - ball.offsetHeight + 'px';
-                velocityY = 0;
-                isJumping = false;
-            }
+        // Allow dragging over
+        function allowDrop(event) {
+            event.preventDefault();
         }
 
-        // Function to simulate a "kick"
-        function kickBall() {
-            if (!isJumping) {
-                velocityY = jumpStrength; // Apply upward force (kick)
-                isJumping = true;
+        // Handle dragging item
+        function drag(event) {
+            event.dataTransfer.setData("text", event.target.id);
+        }
+
+        // Handle drop action
+        function drop(event) {
+            event.preventDefault();
+            const data = event.dataTransfer.getData("text");
+            const draggedElement = document.getElementById(data);
+            const targetSlot = event.target;
+
+            // Check if the dragged element matches the slot (by ID)
+            if (
+                (targetSlot.id === "slot1" && draggedElement.id === "instrument1") ||
+                (targetSlot.id === "slot2" && draggedElement.id === "instrument2") ||
+                (targetSlot.id === "slot3" && draggedElement.id === "instrument3")
+            ) {
+                targetSlot.appendChild(draggedElement);
+                draggedElement.style.margin = "0";
                 score++;
-                scoreElement.textContent = 'Score: ' + score;
+                scoreElement.textContent = `Score: ${score}`;
+
+                // Check if all pieces are in place
+                if (score === 3) {
+                    musicElement.play(); // Play the sound (you can change it to a traditional Filipino song)
+                    setTimeout(() => {
+                        alert('Congratulations! You completed the Filipino music puzzle!');
+                    }, 500);
+                }
+            } else {
+                alert("Wrong placement! Try again.");
             }
         }
-
-        // Event listener for spacebar to kick
-        window.addEventListener('keydown', function(e) {
-            if (e.code === 'Space') {
-                kickBall();
-            }
-        });
-
-        // Game loop to update ball position
-        function gameLoop() {
-            updateBallPosition();
-            requestAnimationFrame(gameLoop); // Continue the game loop
-        }
-
-        gameLoop(); // Start the game loop
     </script>
-
 </body>
 </html>
-
-
