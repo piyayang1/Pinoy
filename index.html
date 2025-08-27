@@ -1,121 +1,142 @@
-// Get canvas and context
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-
-// Game constants
-const courtWidth = 800;
-const courtHeight = 600;
-const hoopRadius = 30;
-const ballRadius = 10;
-const hoopX = courtWidth - 100;
-const hoopY = courtHeight / 2;
-let score = 0;
-
-// Ball properties
-let ballX = 100;
-let ballY = courtHeight - 50;
-let ballSpeedX = 0;
-let ballSpeedY = 0;
-let gravity = 0.1;
-let isShooting = false;
-
-// Player controls
-let playerSpeed = 5;
-
-// Game loop
-function gameLoop() {
-    // Clear canvas
-    ctx.clearRect(0, 0, courtWidth, courtHeight);
-
-    // Draw court
-    drawCourt();
-
-    // Draw ball
-    drawBall();
-
-    // Update ball position
-    updateBall();
-
-    // Detect ball hoop collision
-    detectCollision();
-
-    // Display score
-    displayScore();
-
-    // Request next frame
-    requestAnimationFrame(gameLoop);
-}
-
-// Draw the basketball court
-function drawCourt() {
-    ctx.fillStyle = "#228B22"; // Court color
-    ctx.fillRect(0, 0, courtWidth, courtHeight); // Court background
-
-    // Draw hoop
-    ctx.fillStyle = "red";
-    ctx.beginPath();
-    ctx.arc(hoopX, hoopY, hoopRadius, 0, Math.PI * 2, false);
-    ctx.fill();
-}
-
-// Draw ball
-function drawBall() {
-    ctx.fillStyle = "orange";
-    ctx.beginPath();
-    ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2, false);
-    ctx.fill();
-}
-
-// Update ball position and velocity
-function updateBall() {
-    if (isShooting) {
-        ballX += ballSpeedX;
-        ballY += ballSpeedY;
-        ballSpeedY += gravity;
-
-        if (ballY + ballRadius >= courtHeight) {
-            ballSpeedY = -ballSpeedY * 0.7; // Bounce off the ground
-            ballY = courtHeight - ballRadius;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basketball Shooting Game</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #87CEEB;
         }
-    }
-}
-
-// Detect collision with hoop
-function detectCollision() {
-    const distance = Math.sqrt(Math.pow(ballX - hoopX, 2) + Math.pow(ballY - hoopY, 2));
-    if (distance <= hoopRadius + ballRadius) {
-        score++;
-        resetBall();
-    }
-}
-
-// Display score
-function displayScore() {
-    ctx.fillStyle = "black";
-    ctx.font = "30px Arial";
-    ctx.fillText("Score: " + score, 20, 40);
-}
-
-// Reset the ball position after scoring
-function resetBall() {
-    ballX = 100;
-    ballY = courtHeight - 50;
-    ballSpeedX = 0;
-    ballSpeedY = 0;
-    isShooting = false;
-}
-
-// Handle keyboard input (moving the player and shooting)
-document.addEventListener("keydown", function (event) {
-    if (event.key === "ArrowUp") {
-        // Shoot the ball
-        if (!isShooting) {
-            isShooting = true;
-            ballSpeedX = 10;
-            ballSpeedY = -15;
+        canvas {
+            border: 2px solid black;
         }
-    }
-});
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script>
+        // Get canvas and context
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
 
-// Start the game loop
-gameLoop();
+        // Game constants
+        const courtWidth = 800;
+        const courtHeight = 600;
+        const hoopRadius = 30;
+        const ballRadius = 10;
+        const hoopX = courtWidth - 100;
+        const hoopY = courtHeight / 2;
+        let score = 0;
+
+        // Ball properties
+        let ballX = 100;
+        let ballY = courtHeight - 50;
+        let ballSpeedX = 0;
+        let ballSpeedY = 0;
+        let gravity = 0.1;
+        let isShooting = false;
+
+        // Game loop
+        function gameLoop() {
+            // Clear canvas
+            ctx.clearRect(0, 0, courtWidth, courtHeight);
+
+            // Draw court
+            drawCourt();
+
+            // Draw ball
+            drawBall();
+
+            // Update ball position
+            updateBall();
+
+            // Detect ball hoop collision
+            detectCollision();
+
+            // Display score
+            displayScore();
+
+            // Request next frame
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Draw the basketball court
+        function drawCourt() {
+            ctx.fillStyle = "#228B22"; // Court color
+            ctx.fillRect(0, 0, courtWidth, courtHeight); // Court background
+
+            // Draw hoop
+            ctx.fillStyle = "red";
+            ctx.beginPath();
+            ctx.arc(hoopX, hoopY, hoopRadius, 0, Math.PI * 2, false);
+            ctx.fill();
+        }
+
+        // Draw ball
+        function drawBall() {
+            ctx.fillStyle = "orange";
+            ctx.beginPath();
+            ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2, false);
+            ctx.fill();
+        }
+
+        // Update ball position and velocity
+        function updateBall() {
+            if (isShooting) {
+                ballX += ballSpeedX;
+                ballY += ballSpeedY;
+                ballSpeedY += gravity;
+
+                if (ballY + ballRadius >= courtHeight) {
+                    ballSpeedY = -ballSpeedY * 0.7; // Bounce off the ground
+                    ballY = courtHeight - ballRadius;
+                }
+            }
+        }
+
+        // Detect collision with hoop
+        function detectCollision() {
+            const distance = Math.sqrt(Math.pow(ballX - hoopX, 2) + Math.pow(ballY - hoopY, 2));
+            if (distance <= hoopRadius + ballRadius) {
+                score++;
+                resetBall();
+            }
+        }
+
+        // Display score
+        function displayScore() {
+            ctx.fillStyle = "black";
+            ctx.font = "30px Arial";
+            ctx.fillText("Score: " + score, 20, 40);
+        }
+
+        // Reset the ball position after scoring
+        function resetBall() {
+            ballX = 100;
+            ballY = courtHeight - 50;
+            ballSpeedX = 0;
+            ballSpeedY = 0;
+            isShooting = false;
+        }
+
+        // Handle keyboard input (shooting the ball)
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "ArrowUp" && !isShooting) {
+                // Shoot the ball
+                isShooting = true;
+                ballSpeedX = 10; // Horizontal speed
+                ballSpeedY = -15; // Vertical speed
+            }
+        });
+
+        // Start the game loop
+        gameLoop();
+    </script>
+</body>
+</html>
