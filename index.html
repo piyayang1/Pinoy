@@ -3,86 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tumbang Preso Game</title>
+    <title>Sipa Game</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
         }
         .game-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 30px;
+            position: relative;
+            height: 400px;
+            width: 600px;
+            margin: 50px auto;
+            background-color: #e7e7e7;
+            border: 2px solid #333;
+            overflow: hidden;
         }
-        .can {
-            width: 100px;
-            height: 200px;
+        .ball {
+            width: 40px;
+            height: 40px;
             background-color: #f39c12;
-            border-radius: 10px;
-            margin-right: 20px;
-        }
-        .player {
-            width: 50px;
-            height: 50px;
-            background-color: #2ecc71;
             border-radius: 50%;
             position: absolute;
-            top: 80%;
+            bottom: 50px;
             left: 50%;
             transform: translateX(-50%);
         }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
+        .score {
+            font-size: 24px;
             margin-top: 20px;
         }
     </style>
 </head>
 <body>
 
-    <h1>Tumbang Preso Game</h1>
-    <p>Try to knock down the can using your slipper (Click "Throw Slipper")!</p>
+    <h1>Sipa Game</h1>
+    <p>Press the spacebar to kick the ball and keep it in the air!</p>
 
     <div class="game-container">
-        <div class="can" id="can"></div>
-        <div class="player" id="player"></div>
+        <div class="ball" id="ball"></div>
     </div>
 
-    <button id="throwButton">Throw Slipper</button>
+    <div class="score" id="score">Score: 0</div>
 
     <script>
-        let can = document.getElementById('can');
-        let player = document.getElementById('player');
-        let throwButton = document.getElementById('throwButton');
-        let canPosition = { top: 50, left: 150 }; // initial position of the can
+        let ball = document.getElementById('ball');
+        let scoreElement = document.getElementById('score');
+        let score = 0;
+        let velocityY = 0;
+        let gravity = 0.5; // Gravity pulls the ball down
+        let jumpStrength = -10; // Initial strength for the jump (kick)
+        let isJumping = false;
 
-        // Function to simulate the slipper throw
-        function throwSlipper() {
-            let throwDistance = Math.random() * 200 + 50; // Random throw distance between 50px to 250px
-            let playerPosition = player.getBoundingClientRect();
+        // Function to animate the ball's movement
+        function updateBallPosition() {
+            let ballPosition = ball.getBoundingClientRect();
+            let container = document.querySelector('.game-container');
+            let containerHeight = container.clientHeight;
 
-            // Check if the slipper hits the can
-            if (throwDistance > canPosition.left - throwDistance && throwDistance < canPosition.left + 100) {
-                can.style.backgroundColor = '#e74c3c'; // Change can color to red (knocked down)
-                setTimeout(() => {
-                    alert('You knocked down the can! You win!');
-                    resetGame(); // Reset the game after winning
-                }, 500);
+            // Apply gravity to simulate falling
+            if (ballPosition.top < containerHeight - ball.offsetHeight) {
+                velocityY += gravity; // Increase downward velocity
+                ball.style.top = ballPosition.top + velocityY + 'px';
             } else {
-                alert('Missed! Try again!');
+                // Ball hits the ground (reset)
+                ball.style.top = containerHeight - ball.offsetHeight + 'px';
+                velocityY = 0;
+                isJumping = false;
             }
         }
 
-        // Function to reset the game
-        function resetGame() {
-            can.style.backgroundColor = '#f39c12'; // Reset can color to original
-            canPosition.left = 150; // Reset can position
+        // Function to simulate a "kick"
+        function kickBall() {
+            if (!isJumping) {
+                velocityY = jumpStrength; // Apply upward force (kick)
+                isJumping = true;
+                score++;
+                scoreElement.textContent = 'Score: ' + score;
+            }
         }
 
-        // Event listener for throwing the slipper
-        throwButton.addEventListener('click', throwSlipper);
+        // Event listener for spacebar to kick
+        window.addEventListener('keydown', function(e) {
+            if (e.code === 'Space') {
+                kickBall();
+            }
+        });
+
+        // Game loop to update ball position
+        function gameLoop() {
+            updateBallPosition();
+            requestAnimationFrame(gameLoop); // Continue the game loop
+        }
+
+        gameLoop(); // Start the game loop
     </script>
+
 </body>
 </html>
+
 
