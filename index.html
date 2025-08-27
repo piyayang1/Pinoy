@@ -11,30 +11,40 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #87CEEB;
+            background: linear-gradient(to top, #87CEEB, #1E90FF); /* Sky blue gradient */
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
         }
         canvas {
-            border: 2px solid black;
+            border: 2px solid #333;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+        }
+        #score {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 40px;
+            color: #fff;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
         }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="score">Score: 0</div>
     <script>
-        // Get canvas and context
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
-        // Game constants
         const courtWidth = 800;
         const courtHeight = 600;
-        const hoopRadius = 30;
-        const ballRadius = 10;
+        const hoopRadius = 40;
+        const ballRadius = 12;
         const hoopX = courtWidth - 100;
         const hoopY = courtHeight / 2;
         let score = 0;
 
-        // Ball properties
         let ballX = 100;
         let ballY = courtHeight - 50;
         let ballSpeedX = 0;
@@ -42,51 +52,56 @@
         let gravity = 0.1;
         let isShooting = false;
 
-        // Game loop
         function gameLoop() {
-            // Clear canvas
             ctx.clearRect(0, 0, courtWidth, courtHeight);
 
-            // Draw court
             drawCourt();
-
-            // Draw ball
             drawBall();
-
-            // Update ball position
             updateBall();
-
-            // Detect ball hoop collision
             detectCollision();
-
-            // Display score
             displayScore();
 
-            // Request next frame
             requestAnimationFrame(gameLoop);
         }
 
-        // Draw the basketball court
+        // Drawing the court with gradient and shadows
         function drawCourt() {
-            ctx.fillStyle = "#228B22"; // Court color
-            ctx.fillRect(0, 0, courtWidth, courtHeight); // Court background
+            // Court background with gradient
+            const grd = ctx.createLinearGradient(0, 0, 0, courtHeight);
+            grd.addColorStop(0, "#32CD32"); // Lighter green at the top
+            grd.addColorStop(1, "#228B22"); // Darker green at the bottom
+            ctx.fillStyle = grd;
+            ctx.fillRect(0, 0, courtWidth, courtHeight);
 
-            // Draw hoop
+            // Draw the hoop with 3D effect
             ctx.fillStyle = "red";
             ctx.beginPath();
             ctx.arc(hoopX, hoopY, hoopRadius, 0, Math.PI * 2, false);
             ctx.fill();
+            ctx.strokeStyle = "#8B0000";
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            ctx.closePath();
         }
 
-        // Draw ball
+        // Drawing the ball with 3D shadow and gradient
         function drawBall() {
-            ctx.fillStyle = "orange";
+            const grd = ctx.createRadialGradient(ballX, ballY, 0, ballX, ballY, ballRadius);
+            grd.addColorStop(0, "#FFA500"); // Bright orange
+            grd.addColorStop(1, "#FF4500"); // Dark orange
+
+            ctx.fillStyle = grd;
             ctx.beginPath();
             ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2, false);
             ctx.fill();
+            
+            // Ball shadow for 3D effect
+            ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+            ctx.beginPath();
+            ctx.arc(ballX + 5, ballY + 5, ballRadius, 0, Math.PI * 2, false);
+            ctx.fill();
         }
 
-        // Update ball position and velocity
         function updateBall() {
             if (isShooting) {
                 ballX += ballSpeedX;
@@ -100,23 +115,21 @@
             }
         }
 
-        // Detect collision with hoop
         function detectCollision() {
             const distance = Math.sqrt(Math.pow(ballX - hoopX, 2) + Math.pow(ballY - hoopY, 2));
             if (distance <= hoopRadius + ballRadius) {
                 score++;
                 resetBall();
+                createParticleEffect();
             }
         }
 
-        // Display score
+        // Display the score with better aesthetics
         function displayScore() {
-            ctx.fillStyle = "black";
-            ctx.font = "30px Arial";
-            ctx.fillText("Score: " + score, 20, 40);
+            document.getElementById("score").textContent = `Score: ${score}`;
         }
 
-        // Reset the ball position after scoring
+        // Reset ball position after scoring
         function resetBall() {
             ballX = 100;
             ballY = courtHeight - 50;
@@ -125,10 +138,48 @@
             isShooting = false;
         }
 
+        // Particle effect when scoring
+        function createParticleEffect() {
+            let particles = [];
+            for (let i = 0; i < 20; i++) {
+                particles.push({
+                    x: hoopX,
+                    y: hoopY,
+                    speedX: Math.random() * 4 - 2,
+                    speedY: Math.random() * 4 - 2,
+                    alpha: 1
+                });
+            }
+
+            function drawParticles() {
+                particles.forEach((particle, index) => {
+                    ctx.fillStyle = `rgba(255, 165, 0, ${particle.alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, 3, 0, Math.PI * 2, false);
+                    ctx.fill();
+                    particle.x += particle.speedX;
+                    particle.y += particle.speedY;
+                    particle.alpha -= 0.05;
+
+                    if (particle.alpha <= 0) {
+                        particles.splice(index, 1);
+                    }
+                });
+            }
+
+            // Draw particle effect on hoop
+            function animateParticles() {
+                if (particles.length > 0) {
+                    drawParticles();
+                    requestAnimationFrame(animateParticles);
+                }
+            }
+            animateParticles();
+        }
+
         // Handle keyboard input (shooting the ball)
         document.addEventListener("keydown", function (event) {
             if (event.key === "ArrowUp" && !isShooting) {
-                // Shoot the ball
                 isShooting = true;
                 ballSpeedX = 10; // Horizontal speed
                 ballSpeedY = -15; // Vertical speed
